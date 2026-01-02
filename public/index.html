@@ -2,87 +2,90 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Mapa de Aliados GuanaGo</title>
+    <title>GuanaGo - Mapa de Aliados</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .legend { background: white; padding: 10px; border-radius: 5px; position: absolute; bottom: 30px; left: 10px; z-index: 1; border: 1px solid #ccc; }
+        .legend { background: white; padding: 10px; border-radius: 5px; position: absolute; bottom: 30px; left: 10px; z-index: 1; border: 1px solid #ccc; font-family: sans-serif; }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
 <div class="legend">
-    <h4>Planes GuanaGo</h4>
+    <h4 style="margin: 0 0 10px 0;">Planes GuanaGo</h4>
     <div><span style="color: #FFD700">●</span> Full Power</div>
     <div><span style="color: #00C851">●</span> Impacto</div>
     <div><span style="color: #33b5e5">●</span> Esencial</div>
-    <div><span style="color: #bdbdbd">●</span> Gratis</div>
+    <div><span style="color: hsl(0, 69%, 46%)">●</span> Gratis</div>
 </div>
 
 <script>
-    // 1. REEMPLAZA ESTO CON TU TOKEN DE MAPBOX
+    // 1. REEMPLAZA CON TU TOKEN REAL
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2t5c2s4aW5nIiwiYSI6ImNqbTc1M2VncDA0a2Iza25vN2x5M29obXcifQ.RoIq-SsDb9l32j8Ydw4d2w';
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/light-v11', // Estilo claro para que resalten los puntos
-        center: [-81.7005, 12.5847], // Coordenadas de San Andrés
+        style: 'mapbox://styles/mapbox/light-v11', 
+        center: [-81.7005, 12.5847], // San Andrés
         zoom: 12
     });
 
     map.on('load', () => {
-        // 2. Conectamos con tu servidor de Render
+        console.log("📍 Mapa cargado, solicitando datos...");
+
         map.addSource('aliados', {
             type: 'geojson',
+            // Usamos la ruta relativa para que funcione en Local y en Render
+            // USA LA URL COMPLETA PARA PROBAR:
             data: '/api/v1/locations.geojson'
         });
 
-        // Verificación de errores en la carga de datos
-        map.on('error', (e) => {
-            console.error('Error en el mapa:', e);
-        });
-
-        // 3. Pintamos los puntos con colores según el PLAN
         map.addLayer({
             'id': 'puntos-guana',
             'type': 'circle',
             'source': 'aliados',
             'paint': {
-                'circle-radius': 8,
+                'circle-radius': 10,
                 'circle-stroke-width': 2,
                 'circle-stroke-color': '#ffffff',
                 'circle-color': [
                     'match',
                     ['get', 'plan'],
-                    'Full Power', '#FFD700', // Dorado
-                    'Impacto', '#00C851',    // Verde
-                    'Esencial', '#33b5e5',   // Azul GuanaGo
-                    'Gratis', '#bdbdbd',     // Gris
-                    '#33b5e5'                // Color por defecto
+                    'Full Power', '#FFD700',
+                    'Impacto', '#00C851',
+                    'Esencial', '#33b5e5',
+                    'Gratis', '#bdbdbd',
+                    '#33b5e5' // Color por defecto
                 ]
             }
         });
 
-        // 4. Ventana emergente (Popup) al hacer clic
+        // Evento para ver los datos al hacer clic
         map.on('click', 'puntos-guana', (e) => {
             const props = e.features[0].properties;
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
                 .setHTML(`
-                    <strong>${props.storeName}</strong><br>
-                    <span>Categoría: ${props.categoria}</span><br>
-                    <small>Plan: ${props.plan}</small>
+                    <div style="font-family: sans-serif; padding: 5px;">
+                        <h3 style="margin: 0;">${props.storeName}</h3>
+                        <p style="margin: 5px 0;"><b>Categoría:</b> ${props.categoria}</p>
+                        <p style="margin: 5px 0;"><b>Plan:</b> ${props.plan}</p>
+                    </div>
                 `)
                 .addTo(map);
         });
 
-        // Cambiar cursor al pasar sobre un punto
         map.on('mouseenter', 'puntos-guana', () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', 'puntos-guana', () => { map.getCanvas().style.cursor = ''; });
+    });
+
+    // Manejo de errores en la consola
+    map.on('error', (e) => {
+        console.error("❌ Error de Mapbox:", e.error);
     });
 </script>
 

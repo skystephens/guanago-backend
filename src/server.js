@@ -1,21 +1,24 @@
 require('dotenv').config({ path: '../.env' });
 const express = require('express');
+const cors = require('cors'); // 1. Importar
 const path = require('path');
 const axios = require('axios');
 const mapaRoutes = require('./routes/mapa');
 
 const app = express();
 
+app.use(cors()); // 2. Activar ANTES de las rutas
 // Middleware
 app.use(express.json());
 
-// 1. SERVIR ARCHIVOS ESTÁTICOS (EL MAPA)
+// 1. RUTAS DE LA API
+app.use('/api/v1', mapaRoutes);
+
+// 2. SERVIR ARCHIVOS ESTÁTICOS (EL MAPA)
 // Esta línea busca la carpeta 'public' que está afuera de 'src'
 const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
 
-// 2. RUTAS DE LA API
-app.use('/api/v1', mapaRoutes);
 
 // Ruta para el Onboarding (Lo que hicimos con Groq anteriormente)
 app.post('/api/v1/onboarding', async (req, res) => {
