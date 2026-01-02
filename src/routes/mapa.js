@@ -16,20 +16,27 @@ router.get('/locations.geojson', async (req, res) => {
             "features": response.data.records.map(record => {
                 const fields = record.fields;
                 
+                // Función para limpiar las coordenadas de comas
+                const limpiarCoordenada = (valor) => {
+                    if (!valor) return 0;
+                    // Convertimos a string y cambiamos la coma por punto
+                    const stringLimpio = valor.toString().replace(',', '.');
+                    return parseFloat(stringLimpio);
+                };
+
                 return {
                     "type": "Feature",
                     "properties": {
                         "storeName": fields["Nombre"] || "Establecimiento GuanaGo",
                         "categoria": fields["Categoria"] || "General",
-                        "plan": fields["Plan"] || "Gratis", // Gratis, Esencial, Impacto, Full Power
-                        "address": fields["Direccion"] || "San Andrés Isla",
-                        "descripcion": fields["Descripcion_Corta"] || "" 
+                        "plan": fields["Plan"] || "Gratis",
+                        "address": fields["Direccion"] || "San Andrés Isla"
                     },
                     "geometry": {
                         "type": "Point",
                         "coordinates": [
-                            parseFloat(fields["Longitud"]), // [Longitud, Latitud]
-                            parseFloat(fields["Latitud"])
+                            limpiarCoordenada(fields["Longitud"]), // [Longitud, Latitud]
+                            limpiarCoordenada(fields["Latitud"])
                         ]
                     }
                 };

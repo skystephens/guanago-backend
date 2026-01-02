@@ -1,66 +1,37 @@
 require('dotenv').config({ path: '../.env' });
 const express = require('express');
+const path = require('path');
 const axios = require('axios');
-const Groq = require('groq-sdk'); // Importamos Groq
 const mapaRoutes = require('./routes/mapa');
 
 const app = express();
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+// Middleware
 app.use(express.json());
+
+// 1. SERVIR ARCHIVOS ESTÁTICOS (EL MAPA)
+// Esta línea busca la carpeta 'public' que está afuera de 'src'
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath));
+
+// 2. RUTAS DE LA API
 app.use('/api/v1', mapaRoutes);
 
-// ENDPOINT DE ONBOARDING CON IA (GROQ)
+// Ruta para el Onboarding (Lo que hicimos con Groq anteriormente)
 app.post('/api/v1/onboarding', async (req, res) => {
-    const { nombre, relato } = req.body;
-
-    try {
-        // 1. Jarvis analiza el relato usando Groq (Llama 3)
-        const chatCompletion = await groq.chat.completions.create({
-            messages: [
-                {
-                    role: "system",
-                    content: "Eres Jarvis, el cerebro de GuanaGo. Tu misión es convertir relatos de empresarios de San Andrés en perfiles estructurados para un sistema RAG (Base de conocimientos). Enfócate en la esencia cultural Raizal, servicios y sostenibilidad."
-                },
-                {
-                    role: "user",
-                    content: `Analiza este relato: "${relato}". Extrae de forma estructurada: 
-                              1. Nombre comercial. 
-                              2. Servicios clave. 
-                              3. Elemento de identidad Kriol/Raizal. 
-                              4. Breve descripción optimizada para recomendación turística.`
-                }
-            ],
-            model: "llama-3.3-70b-versatile", // Modelo ultra rápido y capaz
-        });
-
-        const contextoIA = chatCompletion.choices[0]?.message?.content || "";
-
-        // 2. Guardar en Airtable (Onboarding_Aliados)
-        await axios.post(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Onboarding_Aliados`, {
-            fields: {
-                "Nombre del Aliado": nombre,
-                "Relato Original": relato,
-                "Contexto_IA": contextoIA,
-                "Fecha_Registro": new Date().toISOString()
-            }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` }
-        });
-
-        res.status(200).json({ 
-            success: true, 
-            message: "Aliado mapeado exitosamente",
-            analisis: contextoIA 
-        });
-
-    } catch (error) {
-        console.error("Error en Onboarding:", error);
-        res.status(500).json({ error: "Fallo en el procesamiento del aliado" });
-    }
+    // ... tu código de onboarding aquí ...
+    res.json({ success: true, message: "Jarvis escuchando" });
 });
 
+// 3. RUTA RAÍZ (Enviar el index.html del mapa)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
+});
+
+// 4. CONFIGURACIÓN DEL PUERTO (Vital para Render y Local)
+// Si existe un puerto en el sistema (Render), lo usa. Si no, usa el 3000.
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`🚀 Jarvis GuanaGo con Groq activo en puerto ${PORT}`);
+    console.log(`🚀 GuanaGo Backend corriendo en: http://localhost:${PORT}`);
 });
