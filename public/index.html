@@ -2,53 +2,71 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>GuanaGo - Mapa de Aliados</title>
+    <title>GuanaGo - San Andrés Live</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .legend { background: white; padding: 10px; border-radius: 5px; position: absolute; bottom: 30px; left: 10px; z-index: 1; border: 1px solid #ccc; font-family: sans-serif; }
+        .sidebar-categorias { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 20px; 
+            border-radius: 15px; 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            z-index: 1; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            font-family: 'Inter', -apple-system, sans-serif;
+            width: 180px;
+        }
+        .sidebar-categorias h4 { margin: 0 0 15px 0; color: #1a1a1a; font-size: 16px; border-bottom: 2px solid #33b5e5; padding-bottom: 5px; }
+        .cat-item { margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; color: #444; font-weight: 500; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 10px; }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
-<div class="legend">
-    <h4 style="margin: 0 0 10px 0;">Planes GuanaGo</h4>
-    <div><span style="color: #FFD700">●</span> Full Power</div>
-    <div><span style="color: #00C851">●</span> Impacto</div>
-    <div><span style="color: #33b5e5">●</span> Esencial</div>
-    <div><span style="color: hsl(0, 69%, 46%)">●</span> Gratis</div>
+<div class="sidebar-categorias">
+    <h4>Categorías</h4>
+    <div class="cat-item"><span class="dot" style="background: #E91E63"></span> Restaurante</div>
+    <div class="cat-item"><span class="dot" style="background: #FF9800"></span> Alojamiento</div>
+    <div class="cat-item"><span class="dot" style="background: #FFC107"></span> Hotel</div>
+    <div class="cat-item"><span class="dot" style="background: #4CAF50"></span> Tienda</div>
+    <div class="cat-item"><span class="dot" style="background: #00BCD4"></span> Spa</div>
+    <div class="cat-item"><span class="dot" style="background: #795548"></span> Cafeteria</div>
+    <div class="cat-item"><span class="dot" style="background: #F06292"></span> Heladeria</div>
+    <div class="cat-item"><span class="dot" style="background: #607D8B"></span> Gasolinera</div>
+    <div class="cat-item"><span class="dot" style="background: #F44336"></span> Hospital</div>
+    <div class="cat-item"><span class="dot" style="background: #3F51B5"></span> Aeropuerto</div>
+    <div class="cat-item"><span class="dot" style="background: #9C27B0"></span> Iglesia</div>
 </div>
 
 <script>
-    // 1. REEMPLAZA CON TU TOKEN REAL
+    // REEMPLAZA CON TU TOKEN REAL
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2t5c2s4aW5nIiwiYSI6ImNqbTc1M2VncDA0a2Iza25vN2x5M29obXcifQ.RoIq-SsDb9l32j8Ydw4d2w';
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/light-v11', 
-        center: [-81.7005, 12.5847], // San Andrés
-        zoom: 12
+        style: 'mapbox://styles/mapbox/standard', 
+        center: [-81.7100, 12.5500], // Centro exacto de la isla
+        zoom: 12.5, // Un zoom ideal para ver toda la forma de la isla
+        pitch: 45, // Un poco de inclinación para que se vea el relieve 3D del estilo Standard
+        bearing: 0
     });
 
-    map.addControl(
-        new mapboxgl.GeolocateControl({
-            positionOptions: { enableHighAccuracy: true },
-            trackUserLocation: true, // Sigue al usuario mientras camina
-            showUserHeading: true    // Indica hacia dónde mira el teléfono
-        })
-    );
-
-    map.on('load', () => {
-        console.log("📍 Mapa cargado, solicitando datos...");
-
+    map.on('style.load', () => {
+        // Configuramos el preset "Day" para que se vea verde y claro
+        map.setConfigProperty('basemap', 'lightPreset', 'day');
+        
+        // 2. OCULTAR los puntos de interés de Mapbox (Hoteles, tiendas, etc. ajenos a GuanaGo)
+        map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+        map.setConfigProperty('basemap', 'showTransitLabels', false); // Opcional: oculta paradas de bus/ferry
+        
         map.addSource('aliados', {
             type: 'geojson',
-            // Usamos la ruta relativa para que funcione en Local y en Render
-            // USA LA URL COMPLETA PARA PROBAR:
             data: '/api/v1/locations.geojson'
         });
 
@@ -57,56 +75,47 @@
             'type': 'circle',
             'source': 'aliados',
             'paint': {
-                'circle-radius': 10,
+                'circle-radius': 9,
                 'circle-stroke-width': 2,
                 'circle-stroke-color': '#ffffff',
                 'circle-color': [
                     'match',
-                    ['get', 'plan'], 
-                    'Full Power', '#FFD700', // Dorado
-                    'Impacto', '#00C851',    // Verde
-                    'Esencial', '#33b5e5',   // Azul GuanaGo
-                    'Gratis', '#bdbdbd',     // Gris
-                    'Alojamiento', '#FF8C00', // Naranja (Para tus alojamientos protegidos)
-                    '#33b5e5'                // Color por defecto
+                    ['get', 'categoria'],
+                    'Restaurante', '#E91E63',
+                    'Actividad', '#2196F3',
+                    'Tienda', '#4CAF50',
+                    'Alojamiento', '#FF9800',
+                    'Otros', '#9C27B0',
+                    '#9C27B0' // Color por defecto si no coincide nada
                 ]
             }
         });
 
-        // Evento para ver los datos al hacer clic
-        map.on('click', 'puntos-guana', (e) => {
-            const props = e.features[0].properties;
-            new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                    <div style="font-family: sans-serif; padding: 5px;">
-                        <h3 style="margin: 0;">${props.storeName}</h3>
-                        <p style="margin: 5px 0;"><b>Categoría:</b> ${props.categoria}</p>
-                        <p style="margin: 5px 0;"><b>Plan:</b> ${props.plan}</p>
-                    </div>
-                `)
-                .addTo(map);
-        });
-
-        map.on('mouseenter', 'puntos-guana', () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', 'puntos-guana', () => { map.getCanvas().style.cursor = ''; });
-
-        // Esto hace que el mapa se mueva automáticamente a tus puntos
-        fetch('/api/v1/locations.geojson')
-            .then(res => res.json())
-            .then(data => {
-                if (data.features.length > 0) {
-                    const firstCoord = data.features[0].geometry.coordinates;
-                    map.flyTo({ center: firstCoord, zoom: 14 });
-                    console.log("✈️ Volando hacia el primer aliado en:", firstCoord);
-                }
-            });
+        // GPS en tiempo real
+        map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: true,
+            showUserHeading: true
+        }));
     });
 
-    // Manejo de errores en la consola
-    map.on('error', (e) => {
-        console.error("❌ Error de Mapbox:", e.error);
+    // Popups al hacer clic
+    map.on('click', 'puntos-guana', (e) => {
+        const props = e.features[0].properties;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <div style="padding:10px;">
+                    <h3 style="margin:0; color:#33b5e5;">${props.storeName}</h3>
+                    <p><b>Plan:</b> ${props.plan}</p>
+                    <p><small>Ubicación certificada por GuanaGo</small></p>
+                </div>
+            `)
+            .addTo(map);
     });
+
+    map.on('mouseenter', 'puntos-guana', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'puntos-guana', () => map.getCanvas().style.cursor = '');
 </script>
 
 </body>

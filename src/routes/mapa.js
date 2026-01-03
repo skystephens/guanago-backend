@@ -11,36 +11,36 @@ router.get('/locations.geojson', async (req, res) => {
         });
 
         // 2. Mapeo al formato GeoJSON con tus 4 planes y Categoria
-        const geojson = {
-            "type": "FeatureCollection",
-            "features": response.data.records.map(record => {
+        const features = response.data.records
+            .map(record => {
                 const fields = record.fields;
-                
-                // Función para limpiar las coordenadas de comas
-                const limpiarCoordenada = (valor) => {
-                    if (!valor) return 0;
-                    // Convertimos a string y cambiamos la coma por punto
-                    const stringLimpio = valor.toString().replace(',', '.');
-                    return parseFloat(stringLimpio);
-                };
+                const latRaw = fields["Latitud"];
+                const lngRaw = fields["Longitud"];
+
+                // SI NO HAY COORDENADAS, IGNORAMOS ESTE PUNTO
+                if (!latRaw || !lngRaw) return null;
+
+                const lat = parseFloat(latRaw.toString().replace(',', '.'));
+                const lng = parseFloat(lngRaw.toString().replace(',', '.'));
 
                 return {
                     "type": "Feature",
                     "properties": {
-                        "storeName": fields["Tipo"] === "Alojamiento" ? `Hospedaje Premium #${fields["ID_Interno"]}` : (fields["Nombre"] || "Establecimiento GuanaGo"),
-                        "categoria": fields["Categoria"] || "General",
-                        "plan": fields["Tipo"] === "Alojamiento" ? "Alojamiento" : (fields["Plan"] || "Gratis"),
-                        "address": fields["Direccion"] || "San Andrés Isla"
+                        "storeName": fields["Nombre"],
+                        // Convertimos a minúsculas y quitamos espacios extras para que sea más fácil de reconocer
+                        "categoria": (fields["Categoria"] || "Otros").trim()
                     },
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [
-                            limpiarCoordenada(fields["Longitud"]), // [Longitud, Latitud]
-                            limpiarCoordenada(fields["Latitud"])
-                        ]
+                        "coordinates": [lng, lat] // Longitud primero siempre
                     }
                 };
             })
+            .filter(f => f !== null); // Elimina los registros que no tenían coordenadas
+
+        const geojson = {
+            "type": "FeatureCollection",
+            "features": features
         };
 
         res.json(geojson);
