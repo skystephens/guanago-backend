@@ -34,6 +34,14 @@
         zoom: 12
     });
 
+    map.addControl(
+        new mapboxgl.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: true, // Sigue al usuario mientras camina
+            showUserHeading: true    // Indica hacia dónde mira el teléfono
+        })
+    );
+
     map.on('load', () => {
         console.log("📍 Mapa cargado, solicitando datos...");
 
@@ -54,12 +62,13 @@
                 'circle-stroke-color': '#ffffff',
                 'circle-color': [
                     'match',
-                    ['get', 'plan'],
-                    'Full Power', '#FFD700',
-                    'Impacto', '#00C851',
-                    'Esencial', '#33b5e5',
-                    'Gratis', '#bdbdbd',
-                    '#33b5e5' // Color por defecto
+                    ['get', 'plan'], 
+                    'Full Power', '#FFD700', // Dorado
+                    'Impacto', '#00C851',    // Verde
+                    'Esencial', '#33b5e5',   // Azul GuanaGo
+                    'Gratis', '#bdbdbd',     // Gris
+                    'Alojamiento', '#FF8C00', // Naranja (Para tus alojamientos protegidos)
+                    '#33b5e5'                // Color por defecto
                 ]
             }
         });
@@ -81,6 +90,17 @@
 
         map.on('mouseenter', 'puntos-guana', () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', 'puntos-guana', () => { map.getCanvas().style.cursor = ''; });
+
+        // Esto hace que el mapa se mueva automáticamente a tus puntos
+        fetch('/api/v1/locations.geojson')
+            .then(res => res.json())
+            .then(data => {
+                if (data.features.length > 0) {
+                    const firstCoord = data.features[0].geometry.coordinates;
+                    map.flyTo({ center: firstCoord, zoom: 14 });
+                    console.log("✈️ Volando hacia el primer aliado en:", firstCoord);
+                }
+            });
     });
 
     // Manejo de errores en la consola

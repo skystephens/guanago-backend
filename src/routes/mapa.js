@@ -27,9 +27,9 @@ router.get('/locations.geojson', async (req, res) => {
                 return {
                     "type": "Feature",
                     "properties": {
-                        "storeName": fields["Nombre"] || "Establecimiento GuanaGo",
+                        "storeName": fields["Tipo"] === "Alojamiento" ? `Hospedaje Premium #${fields["ID_Interno"]}` : (fields["Nombre"] || "Establecimiento GuanaGo"),
                         "categoria": fields["Categoria"] || "General",
-                        "plan": fields["Plan"] || "Gratis",
+                        "plan": fields["Tipo"] === "Alojamiento" ? "Alojamiento" : (fields["Plan"] || "Gratis"),
                         "address": fields["Direccion"] || "San Andrés Isla"
                     },
                     "geometry": {
