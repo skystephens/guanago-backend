@@ -78,9 +78,11 @@
                 // TAMAÑO según el Plan (Jerarquía comercial)
                 'circle-radius': [
                     'match', ['get', 'plan'],
-                    'Full Power', 12,
-                    'Impacto', 9,
-                    6 // Tamaño para los Esencial/Gratis
+                    'Lider', 12,         // El más grande y destacado
+                    'Visibilidad', 9,    // Tamaño intermedio
+                    'Emprendedor', 7,    // Un poco más pequeño
+                    'Gratis', 5,         // El punto más discreto
+                    6                    // Tamaño por defecto
                 ],
                 // COLOR según la Categoría (Identificación visual)
                 'circle-color': [
@@ -118,12 +120,16 @@
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(`
-                <div style="padding:10px; font-family: 'Inter', sans-serif;">
-                    <h3 style="margin:0; color:#33b5e5; font-size:16px;">${props.storeName}</h3>
-                    <p style="margin:5px 0; font-size:13px;"><b>Categoría:</b> ${props.categoria}</p>
-                    <p style="margin:5px 0; font-size:13px;"><b>Plan:</b> ${props.plan || 'Esencial'}</p> 
-                    <hr style="border:0; border-top:1px solid #eee;">
-                    <p style="margin:0;"><small style="color:#888;">📍 Ubicación certificada GuanaGo</small></p>
+                <div style="padding:12px; font-family: 'Inter', sans-serif; min-width: 150px;">
+                    <h3 style="margin:0 0 5px 0; color:#33b5e5; font-size:16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        ${props.storeName}
+                    </h3>
+                    <p style="margin:8px 0; font-size:14px; color: #444;">
+                        <strong>Tipo:</strong> ${props.categoria}
+                    </p>
+                    <div style="background: #f8f9fa; padding: 5px; border-radius: 4px; text-align: center;">
+                        <small style="color:#888; font-weight: bold;">📍 Ubicación Certificada</small>
+                    </div>
                 </div>
             `)
             .addTo(map);

@@ -25,8 +25,8 @@ router.get('/locations.geojson', async (req, res) => {
                     "type": "Feature",
                     "properties": {
                         "storeName": fields["Nombre"],
-                        "categoria": fields["Categoria"], // Esto activa los COLORES
-                        "plan": fields["Plan"] || "Gratis"  // 👈 ESTA LÍNEA ACTIVA EL TAMAÑO Y EL TEXTO
+                        "categoria": fields["Categoria"],
+                        "plan": fields["Plan"] || "Gratis" // Mantenlo aquí para la lógica de tamaño
                     },
                     "geometry": {
                         "type": "Point",
