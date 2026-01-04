@@ -117,19 +117,38 @@
     // Popups al hacer clic
     map.on('click', 'puntos-guana', (e) => {
         const props = e.features[0].properties;
-        new mapboxgl.Popup()
+        
+        // 1. Lógica de la Promoción (Solo aparece si hay texto en Promo_Activa)
+        const promoSection = props.promo 
+            ? `<div style="background: #FFF9C4; border: 1px dashed #FBC02D; padding: 10px; border-radius: 8px; margin: 10px 0; text-align: center;">
+                 <span style="font-size: 13px; font-weight: bold; color: #f57f17;">🎁 PROMO: ${props.promo}</span>
+               </div>` 
+            : '';
+
+        // 2. Construcción del Popup
+        new mapboxgl.Popup({ offset: 15, closeButton: false })
             .setLngLat(e.lngLat)
             .setHTML(`
-                <div style="padding:12px; font-family: 'Inter', sans-serif; min-width: 150px;">
-                    <h3 style="margin:0 0 5px 0; color:#33b5e5; font-size:16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                        ${props.storeName}
-                    </h3>
-                    <p style="margin:8px 0; font-size:14px; color: #444;">
-                        <strong>Tipo:</strong> ${props.categoria}
-                    </p>
-                    <div style="background: #f8f9fa; padding: 5px; border-radius: 4px; text-align: center;">
-                        <small style="color:#888; font-weight: bold;">📍 Ubicación Certificada</small>
+                <div style="font-family: 'Inter', sans-serif; width: 220px; padding: 5px;">
+                    <h3 style="margin: 0; font-size: 18px; color: #1a1a1a;">${props.storeName}</h3>
+                    <span style="font-size: 12px; color: #33b5e5; font-weight: 600; text-transform: uppercase;">
+                        ${props.categoria}
+                    </span>
+
+                    ${promoSection}
+
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <a href="tel:${props.telefono}" style="flex: 1; background: #00C851; color: white; text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">
+                            📞 Contactar
+                        </a>
+                        <a href="/perfil/${props.id_slug || ''}" style="flex: 1; background: #33b5e5; color: white; text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">
+                            ✨ Ver más
+                        </a>
                     </div>
+                    
+                    <p style="margin: 10px 0 0 0; text-align: center;">
+                        <small style="color: #999; font-size: 10px;">📍 Verificado por GuanaGo</small>
+                    </p>
                 </div>
             `)
             .addTo(map);

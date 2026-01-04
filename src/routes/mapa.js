@@ -26,7 +26,12 @@ router.get('/locations.geojson', async (req, res) => {
                     "properties": {
                         "storeName": fields["Nombre"],
                         "categoria": fields["Categoria"],
-                        "plan": fields["Plan"] || "Gratis" // Mantenlo aquí para la lógica de tamaño
+                        "plan": fields["Plan"] || "Gratis", // Mantenlo aquí para la lógica de tamaño
+                        "direccion": fields["Direccion"] || "San Andrés Isla",
+                        "telefono": fields["Telefono"] || "",
+                        "foto": fields["Foto_Principal"] ? fields["Foto_Principal"][0].url : "https://via.placeholder.com/150",
+                        "id_slug": fields["ID_Slug"], // Un nombre corto para la URL, ej: "restaurante-capy"
+                        "promo": fields["Promo_Activa"] || ""
                     },
                     "geometry": {
                         "type": "Point",
