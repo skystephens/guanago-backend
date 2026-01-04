@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
+// Función auxiliar para limpiar coordenadas
+const limpiarCoordenada = (valor) => {
+    if (!valor) return 0;
+    return parseFloat(valor.toString().replace(',', '.'));
+};
+
 // Ruta: https://guanago-backend.onrender.com/api/v1/locations.geojson
 router.get('/locations.geojson', async (req, res) => {
     try {
@@ -14,25 +20,20 @@ router.get('/locations.geojson', async (req, res) => {
         const features = response.data.records
             .map(record => {
                 const fields = record.fields;
-                const latRaw = fields["Latitud"];
-                const lngRaw = fields["Longitud"];
-
-                // SI NO HAY COORDENADAS, IGNORAMOS ESTE PUNTO
-                if (!latRaw || !lngRaw) return null;
-
-                const lat = parseFloat(latRaw.toString().replace(',', '.'));
-                const lng = parseFloat(lngRaw.toString().replace(',', '.'));
 
                 return {
                     "type": "Feature",
                     "properties": {
                         "storeName": fields["Nombre"],
-                        // Convertimos a minúsculas y quitamos espacios extras para que sea más fácil de reconocer
-                        "categoria": (fields["Categoria"] || "Otros").trim()
+                        "categoria": fields["Categoria"], // Esto activa los COLORES
+                        "plan": fields["Plan"] || "Gratis"  // 👈 ESTA LÍNEA ACTIVA EL TAMAÑO Y EL TEXTO
                     },
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [lng, lat] // Longitud primero siempre
+                        "coordinates": [
+                            limpiarCoordenada(fields["Longitud"]),
+                            limpiarCoordenada(fields["Latitud"])
+                        ]
                     }
                 };
             })

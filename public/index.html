@@ -75,19 +75,32 @@
             'type': 'circle',
             'source': 'aliados',
             'paint': {
-                'circle-radius': 9,
-                'circle-stroke-width': 2,
-                'circle-stroke-color': '#ffffff',
+                // TAMAÑO según el Plan (Jerarquía comercial)
+                'circle-radius': [
+                    'match', ['get', 'plan'],
+                    'Full Power', 12,
+                    'Impacto', 9,
+                    6 // Tamaño para los Esencial/Gratis
+                ],
+                // COLOR según la Categoría (Identificación visual)
                 'circle-color': [
                     'match',
                     ['get', 'categoria'],
-                    'Restaurante', '#E91E63',
-                    'Actividad', '#2196F3',
-                    'Tienda', '#4CAF50',
-                    'Alojamiento', '#FF9800',
-                    'Otros', '#9C27B0',
-                    '#9C27B0' // Color por defecto si no coincide nada
-                ]
+                    'Restaurante', '#E91E63', // Rosa/Fucsia
+                    'Alojamiento', '#FB8C00', // Naranja
+                    'Hotel', '#FFD600',       // Amarillo
+                    'Tienda', '#4CAF50',      // Verde
+                    'Spa', '#00BCD4',         // Cian/Turquesa
+                    'Cafeteria', '#795548',   // Marrón
+                    'Heladeria', '#F06292',   // Rosa claro
+                    'Gasolinera', '#607D8B',  // Gris azulado
+                    'Hospital', '#F44336',    // Rojo
+                    'Aeropuerto', '#3F51B5',  // Azul
+                    'Iglesia', '#9C27B0',     // Púrpura
+                    '#bdbdbd'                 // Color gris por defecto si no coincide ninguno
+                ],
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff'
             }
         });
 
@@ -105,10 +118,12 @@
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(`
-                <div style="padding:10px;">
-                    <h3 style="margin:0; color:#33b5e5;">${props.storeName}</h3>
-                    <p><b>Plan:</b> ${props.plan}</p>
-                    <p><small>Ubicación certificada por GuanaGo</small></p>
+                <div style="padding:10px; font-family: 'Inter', sans-serif;">
+                    <h3 style="margin:0; color:#33b5e5; font-size:16px;">${props.storeName}</h3>
+                    <p style="margin:5px 0; font-size:13px;"><b>Categoría:</b> ${props.categoria}</p>
+                    <p style="margin:5px 0; font-size:13px;"><b>Plan:</b> ${props.plan || 'Esencial'}</p> 
+                    <hr style="border:0; border-top:1px solid #eee;">
+                    <p style="margin:0;"><small style="color:#888;">📍 Ubicación certificada GuanaGo</small></p>
                 </div>
             `)
             .addTo(map);
